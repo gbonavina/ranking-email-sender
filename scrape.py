@@ -42,10 +42,8 @@ try:
     )
     filter2.click()
 
-    quit_section = WebDriverWait(driver, 1000).until(
-        EC.presence_of_element_located((By.XPATH, '/html/body/div[16]/div/div[1]/button'))
-    )
-    quit_section.click()
+    close_button = driver.find_element(By.CLASS_NAME, 'swal2-close')
+    close_button.click()
 
 except Exception as e:
     print(f"Error interacting with page elements: {e}")
