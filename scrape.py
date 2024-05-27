@@ -28,22 +28,22 @@ driver.get(url)
 # Usando o click para poder interagir com a página e colocar os filtros necessários
 try:
     button = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
     )
     button.click()
     
     filter1 = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
     )
     filter1.click()
     
     filter2 = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
     )
     filter2.click()
 
     quit_section = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.XPATH, '/html/body/div[16]/div/div[1]/button'))
+        EC.presence_of_element_located((By.XPATH, '/html/body/div[16]/div/div[1]/button'))
     )
     quit_section.click()
 
