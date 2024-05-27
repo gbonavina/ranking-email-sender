@@ -1,22 +1,28 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from bs4 import BeautifulSoup
-import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
+import time
 import pandas as pd
 import os
 from email.message import EmailMessage
 import ssl
 import smtplib
 from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
 # Setup do ChromeDriver
-service = Service(executable_path="chromedriver.exe")
-driver = webdriver.Chrome(service=service)
+service = Service(ChromeDriverManager().install())
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")  # Run in headless mode for CI environment
+options.add_argument("--no-sandbox")  # Bypass OS security model
+options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+
+driver = webdriver.Chrome(service=service, options=options)
 driver.get(url)
 
 # Usando o click para poder interagir com a página e colocar os filtros necessários
