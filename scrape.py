@@ -42,7 +42,7 @@ try:
     )
     filter2.click()
 
-    quit_section = WebDriverWait(driver, 360).until(
+    quit_section = WebDriverWait(driver, 1000).until(
         EC.presence_of_element_located((By.XPATH, '/html/body/div[16]/div/div[1]/button'))
     )
     quit_section.click()
