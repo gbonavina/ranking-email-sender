@@ -26,15 +26,31 @@ driver = webdriver.Chrome(service=service, options=options)
 driver.get(url)
 
 # Usando o click para poder interagir com a página e colocar os filtros necessários
-button = driver.find_element(By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a')
-button.click()
-filter1 = driver.find_element(By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label')
-filter1.click()
-filter2 = driver.find_element(By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label')
-filter2.click()
-wait = WebDriverWait(driver, 10)
-quit_section = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[16]/div/div[1]/button')))
-quit_section.click()
+try:
+    button = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
+    )
+    button.click()
+    
+    filter1 = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+    )
+    filter1.click()
+    
+    filter2 = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
+    )
+    filter2.click()
+
+    quit_section = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.XPATH, '/html/body/div[16]/div/div[1]/button'))
+    )
+    quit_section.click()
+
+except Exception as e:
+    print(f"Error interacting with page elements: {e}")
+    driver.quit()
+    raise
 
 # Coloquei um sleep de 2 segundos para evitar caso ele tentar pegar o HTML do modal dos filtros
 time.sleep(2)
@@ -45,7 +61,7 @@ page_source = driver.page_source
 soup = BeautifulSoup(page_source, 'html.parser')
 rows = soup.find_all('tr', role='row')
 
-dict_keys = ['Ticker','Patrimônio Líquido', 'DY atual', 'P/VP', 'Liquidez Diária', 'Variação (12 meses)', 'Tipo de Fundo', 'Segmento']
+dict_keys = ['Ticker', 'Patrimônio Líquido', 'DY atual', 'P/VP', 'Liquidez Diária', 'Variação (12 meses)', 'Tipo de Fundo', 'Segmento']
 data = []
 
 for row in rows:
