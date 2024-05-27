@@ -2,7 +2,7 @@ name: runs scrape.py
 
 on:
   schedule:
-    - cron: '00 17 * * *' 
+    - cron: '00 20 * * *' 
   workflow_dispatch:
 
 jobs:
