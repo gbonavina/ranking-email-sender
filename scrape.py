@@ -80,7 +80,7 @@ time.sleep(1)
 # Processo para fazer o envio do e-mail
 email_sender = 'ranking.investidor10@gmail.com'
 email_password = os.environ.get("PASSWORD")
-email_reciever = 'gabriellbona@gmail.com'
+email_reciever = 'alvaro.bonavina@gmail.com'
 
 today = datetime.now().strftime('%d/%m/%Y')
 
