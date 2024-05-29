@@ -182,7 +182,7 @@ with open(file2, 'rb') as f:
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
 
 file3 = f"fiis_{file_today}.xlsx"
-with open(file, 'rb') as f:
+with open(file3, 'rb') as f:
     file_data = f.read()
     file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
