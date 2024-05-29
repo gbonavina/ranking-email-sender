@@ -155,11 +155,11 @@ fiis_df.to_excel(f'fiis_{file_today}.xlsx', index=False)
 # Processo para fazer o envio do e-mail
 email_sender = os.environ.get("SENDER")
 email_password = os.environ.get("PASSWORD")
-email_reciever = 'gabriellbona@gmail.com'
+email_reciever = os.environ.get("RECIEVER")
 
 today = datetime.now().strftime('%d/%m/%Y')
 
-subject = f'Ranking de FIIs de hoje ({today})'
+subject = f'Ranking, suas ações e FIIs de hoje ({today})'
 body = f"""
 Confira já o ranking dos FIIs de hoje ({today}) por meio desta tabela Excel feita pelo site Investidor 10. Veja como estão suas ações e FII's hoje também!
 """
