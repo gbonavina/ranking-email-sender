@@ -159,7 +159,7 @@ writer.close()
 # Processo para fazer o envio do e-mail
 email_sender = os.environ.get("SENDER")
 email_password = os.environ.get("PASSWORD")
-email_reciever = 'gabriellbona@gmail.com'
+email_reciever = os.environ.get("RECIEVER")
 
 today = datetime.now().strftime('%d/%m/%Y')
 
