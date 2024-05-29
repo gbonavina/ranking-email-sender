@@ -113,7 +113,6 @@ for acao in acoes:
     time.sleep(1)
 
 acoes_df = pd.DataFrame(data_acoes_list)
-acoes_df.to_excel(f'acoes_{file_today}.xlsx', index=False)
 
 fiis = ['HGRU11', 'KNCR11', 'KNRI11', 'TGAR11', 'VISC11', 'XPML11']
 data_fiis_list = []
@@ -150,12 +149,17 @@ for fii in fiis:
     time.sleep(1)
 
 fiis_df = pd.DataFrame(data_fiis_list)
-fiis_df.to_excel(f'fiis_{file_today}.xlsx', index=False)
+
+writer = pd.ExcelWriter(f'acoes_e_fiis_{file_today}.xlsx', engine='xlsxwriter')
+acoes_df.to_excel(writer, sheet_name='Ações', index=False)
+fiis_df.to_excel(writer, sheet_name='FIIs', index=False)
+
+writer.save()
 
 # Processo para fazer o envio do e-mail
 email_sender = os.environ.get("SENDER")
 email_password = os.environ.get("PASSWORD")
-email_reciever = os.environ.get("RECIEVER")
+email_reciever = 'gabriellbona@gmail.com'
 
 today = datetime.now().strftime('%d/%m/%Y')
 
@@ -175,14 +179,8 @@ with open(file, 'rb') as f:
     file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
 
-file2 = f"acoes_{file_today}.xlsx"
+file2 = f"acoes_e_fiis_{file_today}.xlsx"
 with open(file2, 'rb') as f:
-    file_data = f.read()
-    file_name = f.name
-em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
-
-file3 = f"fiis_{file_today}.xlsx"
-with open(file3, 'rb') as f:
     file_data = f.read()
     file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
