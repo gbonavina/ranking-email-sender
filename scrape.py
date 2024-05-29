@@ -98,6 +98,7 @@ for acao in acoes:
     card_body = soup.find_all(class_='_card-body')
 
     data_acoes = {}
+    data_acoes['Ação'] = acao
     acoes_keys = ['Cotação', 'Variação (12 meses)', 'P/L', 'P/VP', 'DY']
 
     for i, box in enumerate(card_body):
@@ -117,7 +118,7 @@ acoes_df.to_excel(f'acoes_{file_today}.xlsx', index=False)
 # Processo para fazer o envio do e-mail
 email_sender = 'ranking.investidor10@gmail.com'
 email_password = os.environ.get("PASSWORD")
-email_reciever = 'gabriellbonavina@gmail.com'
+email_reciever = 'gabriellbona@gmail.com'
 
 today = datetime.now().strftime('%d/%m/%Y')
 
