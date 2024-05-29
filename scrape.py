@@ -77,10 +77,42 @@ df.to_excel(f'ranking_{file_today}.xlsx', index=False)
 driver.quit()
 time.sleep(1)
 
+# Vamos começar daqui o novo scraping, de fundos e ações específicas.
+acoes = ['BBAS3', 'BBSE3', 'CSMG3']
+data_acoes_list = []
+
+for acao in acoes:
+    url_acoes = f'https://investidor10.com.br/acoes/{acao}/'
+
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode for CI environment
+    options.add_argument("--no-sandbox")  # Bypass OS security model
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url_acoes)
+
+    page_source = driver.page_source
+
+    soup = BeautifulSoup(page_source, 'html.parser')
+    card_body = soup.find_all(class_='_card-body')
+
+    data_acoes = {}
+    acoes_keys = ['Cotação', 'Variação (12 meses)', 'P/L', 'P/VP', 'DY']
+
+    for i, box in enumerate(card_body):
+        text = box.get_text().strip()
+        data_acoes[acoes_keys[i]] = text
+
+    data_acoes_list.append(data_acoes)
+
+acoes_df = pd.DataFrame(data_acoes_list)
+acoes_df.to_excel(f'acoes_{file_today}.xlsx', index=False)
+
 # Processo para fazer o envio do e-mail
 email_sender = 'ranking.investidor10@gmail.com'
 email_password = os.environ.get("PASSWORD")
-email_reciever = 'alvaro.bonavina@gmail.com'
+email_reciever = 'gabriellbona@gmail.com'
 
 today = datetime.now().strftime('%d/%m/%Y')
 
@@ -96,15 +128,18 @@ em['Subject'] = subject
 em.set_content(body)
 
 file = f"ranking_{file_today}.xlsx"
-
 with open(file, 'rb') as f:
     file_data = f.read()
     file_name = f.name
+em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
 
+file2 = f"acoes_{file_today}.xlsx"
+with open(file2, 'rb') as f:
+    file_data = f.read()
+    file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
 
 context = ssl.create_default_context()
-
 with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
     smtp.login(email_sender, email_password)
     smtp.sendmail(email_sender, email_reciever, em.as_string())
