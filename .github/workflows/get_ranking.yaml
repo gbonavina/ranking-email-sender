@@ -34,4 +34,6 @@ jobs:
       - name: Execute scraping
         env:
           PASSWORD: ${{ secrets.PASSWORD }}
+          SENDER: ${{ secrets.SENDER }}
+          RECIEVER: ${{ secrets.RECIEVER }}
         run: python scrape.py
