@@ -115,8 +115,45 @@ for acao in acoes:
 acoes_df = pd.DataFrame(data_acoes_list)
 acoes_df.to_excel(f'acoes_{file_today}.xlsx', index=False)
 
+fiis = ['HGRU11', 'KNCR11', 'KNRI11', 'TGAR11', 'VISC11', 'XPML11']
+data_fiis_list = []
+
+for fii in fiis:
+    url_fiis = f'https://investidor10.com.br/fiis/{fii}/'
+
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Run in headless mode for CI environment
+    options.add_argument("--no-sandbox")  # Bypass OS security model
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url_fiis)
+
+    page_source = driver.page_source
+
+    soup = BeautifulSoup(page_source, 'html.parser')
+    card_body = soup.find_all(class_='_card-body')
+
+    data_fiis = {}
+    data_fiis['FII'] = fii
+    fiis_keys = ['Cotação', 'DY (12 meses)', 'P/VP', 'Liquidez Diária', 'Variação (12 meses)']
+
+    for i, box in enumerate(card_body):
+        if i >= len(fiis_keys):
+            break
+        text = box.get_text().strip()
+        data_fiis[fiis_keys[i]] = text
+
+    data_fiis_list.append(data_fiis)
+
+    driver.quit()
+    time.sleep(1)
+
+fiis_df = pd.DataFrame(data_fiis_list)
+fiis_df.to_excel(f'fiis_{file_today}.xlsx', index=False)
+
 # Processo para fazer o envio do e-mail
-email_sender = 'ranking.investidor10@gmail.com'
+email_sender = os.environ.get("SENDER")
 email_password = os.environ.get("PASSWORD")
 email_reciever = 'gabriellbona@gmail.com'
 
@@ -124,9 +161,8 @@ today = datetime.now().strftime('%d/%m/%Y')
 
 subject = f'Ranking de FIIs de hoje ({today})'
 body = f"""
-Confira já o ranking dos FIIs de hoje ({today}) por meio desta tabela Excel feita pelo site Investidor 10.
+Confira já o ranking dos FIIs de hoje ({today}) por meio desta tabela Excel feita pelo site Investidor 10. Veja como estão suas ações e FII's hoje também!
 """
-
 em = EmailMessage()
 em['From'] = email_sender
 em['To'] = email_reciever
@@ -141,6 +177,12 @@ em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats
 
 file2 = f"acoes_{file_today}.xlsx"
 with open(file2, 'rb') as f:
+    file_data = f.read()
+    file_name = f.name
+em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
+
+file3 = f"fiis_{file_today}.xlsx"
+with open(file, 'rb') as f:
     file_data = f.read()
     file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
