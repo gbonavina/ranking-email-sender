@@ -101,10 +101,15 @@ for acao in acoes:
     acoes_keys = ['Cotação', 'Variação (12 meses)', 'P/L', 'P/VP', 'DY']
 
     for i, box in enumerate(card_body):
+        if i >= len(acoes_keys):
+            break
         text = box.get_text().strip()
         data_acoes[acoes_keys[i]] = text
 
     data_acoes_list.append(data_acoes)
+
+    driver.quit()
+    time.sleep(1)
 
 acoes_df = pd.DataFrame(data_acoes_list)
 acoes_df.to_excel(f'acoes_{file_today}.xlsx', index=False)
@@ -139,7 +144,10 @@ with open(file2, 'rb') as f:
     file_name = f.name
 em.add_attachment(file_data, maintype='application', subtype='vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=file_name)
 
-context = ssl.create_default_context()
-with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-    smtp.login(email_sender, email_password)
-    smtp.sendmail(email_sender, email_reciever, em.as_string())
+if email_password:
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_reciever, em.as_string())
+else:
+    print("Email password not set in environment variables.")
