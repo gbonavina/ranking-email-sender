@@ -154,7 +154,7 @@ writer = pd.ExcelWriter(f'acoes_e_fiis_{file_today}.xlsx', engine='xlsxwriter')
 acoes_df.to_excel(writer, sheet_name='Ações', index=False)
 fiis_df.to_excel(writer, sheet_name='FIIs', index=False)
 
-writer.save()
+writer.close()
 
 # Processo para fazer o envio do e-mail
 email_sender = os.environ.get("SENDER")
