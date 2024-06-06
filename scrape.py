@@ -79,6 +79,8 @@ time.sleep(1)
 
 # Vamos começar daqui o novo scraping, de fundos e ações específicas.
 acoes = ['BBAS3', 'BBSE3', 'CSMG3', 'CXSE3', 'TAEE11', 'TRPL4']
+acoes.sort()
+
 data_acoes_list = []
 
 for acao in acoes:
@@ -114,7 +116,9 @@ for acao in acoes:
 
 acoes_df = pd.DataFrame(data_acoes_list)
 
-fiis = ['BTLG11', 'HGLG11', 'HGRU11', 'KNCR11', 'KNRI11', 'RZAK11', 'TGAR11', 'URPR11', 'VGHF11', 'VISC11', 'XPLG11', 'XPML11']
+fiis = ['BTLG11', 'HGLG11', 'MXRF11', 'KNCR11', 'KNRI11', 'RZAK11', 'TGAR11', 'URPR11', 'VGHF11', 'VISC11', 'XPLG11', 'XPML11']
+fiis.sort()
+
 data_fiis_list = []
 
 for fii in fiis:
