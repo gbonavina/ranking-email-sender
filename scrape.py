@@ -16,7 +16,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
 # Setup do ChromeDriver
-service = Service(ChromeDriverManager().install())
+service = Service(ChromeDriverManager(version="114.0.5735.90").install())
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # Run in headless mode for CI environment
 options.add_argument("--no-sandbox")  # Bypass OS security model
