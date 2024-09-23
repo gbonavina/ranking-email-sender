@@ -1,11 +1,8 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
-from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
@@ -18,65 +15,40 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
-options = Options()
-options.add_argument('--headless')
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')
-options.add_argument('--disable-software-rasterizer')
-options.add_argument('--incognito')
+# Setup do ChromeDriver
+service = Service(ChromeDriverManager().install())
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")  # Run in headless mode for CI environment
+#options.add_argument("--no-sandbox")  # Bypass OS security model
+#options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-# Instala o ChromeDriver e obtém o caminho de instalação
-chrome_install = ChromeDriverManager().install()
-
-print(f"ChromeDriver instalado em: {chrome_install}")
-
-# Cria um objeto Service com o caminho do ChromeDriver
-service = ChromeService(executable_path=chrome_install)
-
-# Inicializa o WebDriver com o Service e as options
 driver = webdriver.Chrome(service=service, options=options)
 driver.get(url)
 
-button = WebDriverWait(driver, 60).until(
-    EC.element_to_be_clickable((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
-)
-try: 
-    button.click()
-except ElementClickInterceptedException:
-    driver.execute_script('arguments[0].click();', button)
-
-    # Esperar até o primeiro filtro ser clicável
-    filter1 = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+# Usando o click para poder interagir com a página e colocar os filtros necessários
+try:
+    button = WebDriverWait(driver, 180).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
     )
-try:
-    # Scroll até o filtro para garantir que está visível
-    driver.execute_script("arguments[0].scrollIntoView();", filter1)
-    filter1.click()
-except (ElementClickInterceptedException, ElementNotInteractableException):
-    driver.execute_script('arguments[0].click();', filter1)
+    button.click()
     
-# Esperar até o segundo filtro ser clicável
-filter2 = WebDriverWait(driver, 60).until(
-    EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
-)
-
-try:
-    # Scroll até o filtro para garantir que está visível
-    driver.execute_script("arguments[0].scrollIntoView();", filter2)
+    filter1 = WebDriverWait(driver, 180).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+    )
+    filter1.click()
+    
+    filter2 = WebDriverWait(driver, 180).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
+    )
     filter2.click()
-except (ElementClickInterceptedException, ElementNotInteractableException):
-    driver.execute_script('arguments[0].click();', filter2)
 
-except TimeoutException:
-    print("Timeout waiting for element to become clickable.")
-except ElementNotInteractableException:
-    print("Element not interactable, attempting alternative interaction.")
+    close_button = driver.find_element(By.CLASS_NAME, 'swal2-close')
+    close_button.click()
+
 except Exception as e:
     print(f"Error interacting with page elements: {e}")
-finally:
     driver.quit()
+    raise
 
 # Coloquei um sleep de 2 segundos para evitar caso ele tentar pegar o HTML do modal dos filtros
 time.sleep(2)
@@ -117,7 +89,7 @@ for acao in acoes:
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode for CI environment
     options.add_argument("--no-sandbox")  # Bypass OS security model
-    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    #options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url_acoes)
@@ -155,7 +127,7 @@ for fii in fiis:
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode for CI environment
     options.add_argument("--no-sandbox")  # Bypass OS security model
-    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    #options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url_fiis)
