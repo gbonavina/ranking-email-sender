@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, TimeoutException, WebDriverException
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
@@ -19,42 +20,71 @@ url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # Run in headless mode for CI environment
-#options.add_argument("--no-sandbox")  # Bypass OS security model
-#options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+options.add_argument("--no-sandbox")  # Bypass OS security model
+options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-driver = webdriver.Chrome(service=service, options=options)
-driver.get(url)
+try:
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url)
+except WebDriverException as e:
+    print(f"Error initializing WebDriver: {e}")
+    exit(1)
 
 # Usando o click para poder interagir com a página e colocar os filtros necessários
+# Esperar até o botão ser clicável
 try:
     button = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
     )
-    button.click()
-    
+    try: 
+        button.click()
+    except ElementClickInterceptedException:
+        driver.execute_script('arguments[0].click();', button)
+
+    # Esperar até o primeiro filtro ser clicável
     filter1 = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
     )
-    filter1.click()
+    try:
+        # Scroll até o filtro para garantir que está visível
+        driver.execute_script("arguments[0].scrollIntoView();", filter1)
+        filter1.click()
+    except (ElementClickInterceptedException, ElementNotInteractableException):
+        driver.execute_script('arguments[0].click();', filter1)
     
+    # Esperar até o segundo filtro ser clicável
     filter2 = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
     )
-    filter2.click()
+    try:
+        # Scroll até o filtro para garantir que está visível
+        driver.execute_script("arguments[0].scrollIntoView();", filter2)
+        filter2.click()
+    except (ElementClickInterceptedException, ElementNotInteractableException):
+        driver.execute_script('arguments[0].click();', filter2)
 
-    close_button = driver.find_element(By.CLASS_NAME, 'swal2-close')
-    close_button.click()
-
+except TimeoutException:
+    print("Timeout waiting for element to become clickable.")
+except ElementNotInteractableException:
+    print("Element not interactable, attempting alternative interaction.")
 except Exception as e:
     print(f"Error interacting with page elements: {e}")
+finally:
     driver.quit()
-    raise
 
 # Coloquei um sleep de 2 segundos para evitar caso ele tentar pegar o HTML do modal dos filtros
 time.sleep(2)
 
 # Pega o HTML do site com os filtros já aplicados
-page_source = driver.page_source
+try:
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get(url)
+    page_source = driver.page_source
+except WebDriverException as e:
+    print(f"Error initializing WebDriver: {e}")
+    exit(1)
+finally:
+    driver.quit()
 
 soup = BeautifulSoup(page_source, 'html.parser')
 rows = soup.find_all('tr', role='row')
@@ -89,12 +119,17 @@ for acao in acoes:
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode for CI environment
     options.add_argument("--no-sandbox")  # Bypass OS security model
-    #options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url_acoes)
-
-    page_source = driver.page_source
+    try:
+        driver = webdriver.Chrome(service=service, options=options)
+        driver.get(url_acoes)
+        page_source = driver.page_source
+    except WebDriverException as e:
+        print(f"Error initializing WebDriver: {e}")
+        continue
+    finally:
+        driver.quit()
 
     soup = BeautifulSoup(page_source, 'html.parser')
     card_body = soup.find_all(class_='_card-body')
@@ -111,7 +146,6 @@ for acao in acoes:
 
     data_acoes_list.append(data_acoes)
 
-    driver.quit()
     time.sleep(1)
 
 acoes_df = pd.DataFrame(data_acoes_list)
@@ -127,12 +161,17 @@ for fii in fiis:
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run in headless mode for CI environment
     options.add_argument("--no-sandbox")  # Bypass OS security model
-    #options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url_fiis)
-
-    page_source = driver.page_source
+    try:
+        driver = webdriver.Chrome(service=service, options=options)
+        driver.get(url_fiis)
+        page_source = driver.page_source
+    except WebDriverException as e:
+        print(f"Error initializing WebDriver: {e}")
+        continue
+    finally:
+        driver.quit()
 
     soup = BeautifulSoup(page_source, 'html.parser')
     card_body = soup.find_all(class_='_card-body')
@@ -149,7 +188,6 @@ for fii in fiis:
 
     data_fiis_list.append(data_fiis)
 
-    driver.quit()
     time.sleep(1)
 
 fiis_df = pd.DataFrame(data_fiis_list)
