@@ -15,13 +15,23 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
-# Setup do ChromeDriver
-service = Service(ChromeDriverManager().install())
-options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Run in headless mode for CI environment
-options.add_argument("--no-sandbox")  # Bypass OS security model
-options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')
+options.add_argument('--disable-software-rasterizer')
+options.add_argument('--incognito')
 
+# Instala o ChromeDriver e obtém o caminho de instalação
+chrome_install = ChromeDriverManager().install()
+
+print(f"ChromeDriver instalado em: {chrome_install}")
+
+# Cria um objeto Service com o caminho do ChromeDriver
+service = ChromeService(executable_path=chrome_install)
+
+# Inicializa o WebDriver com o Service e as options
 driver = webdriver.Chrome(service=service, options=options)
 driver.get(url)
 
