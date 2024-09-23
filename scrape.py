@@ -44,12 +44,12 @@ try:
     button.click()
     
     filter1 = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label/input'))
     )
     filter1.click()
     
     filter2 = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
+        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label/input'))
     )
     filter2.click()
 
