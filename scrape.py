@@ -41,21 +41,30 @@ try:
     button = WebDriverWait(driver, 180).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
     )
-    driver.save_screenshot("error_screenshot0.png")
-    button.click()
+    try: 
+        button.click()
+    except ElementClickInterceptedException:
+        driver.execute_script('arguments[0].click();', button)
     
     filter1 = WebDriverWait(driver, 180).until(
-        EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label/input'))
+    EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label/input'))
     )
-    driver.save_screenshot("error_screenshot1.png")
-    filter1.click()
+    try:
+        filter1.click()
+    except ElementClickInterceptedException:
+        driver.execute_script('arguments[0].click();', filter1)
     
+    # Espera pelo segundo filtro e tenta clicar
     filter2 = WebDriverWait(driver, 180).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label/input'))
     )
-    driver.save_screenshot("error_screenshot2.png")
-    filter2.click()
-
+    try:
+        filter2.click()
+    except ElementClickInterceptedException:
+        driver.execute_script('arguments[0].click();', filter2)
+        
+except ElementClickInterceptedException:
+    driver.execute_script('arguments[0].click();', filter2)
     close_button = driver.find_element(By.CLASS_NAME, 'swal2-close')
     close_button.click()
 
