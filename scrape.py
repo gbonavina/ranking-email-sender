@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
+import os
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
