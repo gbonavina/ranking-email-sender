@@ -7,11 +7,6 @@ from selenium.common.exceptions import ElementClickInterceptedException, Element
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import os
-from email.message import EmailMessage
-import ssl
-import smtplib
-from datetime import datetime
 from webdriver_manager.chrome import ChromeDriverManager
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
@@ -19,73 +14,39 @@ url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 # Setup do ChromeDriver
 service = Service(ChromeDriverManager().install())
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Run in headless mode for CI environment
-options.add_argument("--no-sandbox")  # Bypass OS security model
-options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 
 try:
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url)
-except WebDriverException as e:
-    print(f"Error initializing WebDriver: {e}")
-    exit(1)
 
-# Usando o click para poder interagir com a página e colocar os filtros necessários
-# Esperar até o botão ser clicável
-try:
+    # Apply filters
     button = WebDriverWait(driver, 180).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="page-ranking"]/section[1]/div/div/div[1]/div[3]/a'))
     )
-    try: 
-        button.click()
-    except ElementClickInterceptedException:
-        driver.execute_script('arguments[0].click();', button)
+    driver.execute_script('arguments[0].click();', button)
 
-    # Esperar até o primeiro filtro ser clicável
-    filter1 = WebDriverWait(driver, 180).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[5]/div/label'))
-    )
-    try:
-        # Scroll até o filtro para garantir que está visível
-        driver.execute_script("arguments[0].scrollIntoView();", filter1)
-        filter1.click()
-    except (ElementClickInterceptedException, ElementNotInteractableException):
-        driver.execute_script('arguments[0].click();', filter1)
-    
-    # Esperar até o segundo filtro ser clicável
-    filter2 = WebDriverWait(driver, 180).until(
-        EC.element_to_be_clickable((By.XPATH, '//*[@id="swal2-content"]/div/div[6]/div/label'))
-    )
-    try:
-        # Scroll até o filtro para garantir que está visível
-        driver.execute_script("arguments[0].scrollIntoView();", filter2)
-        filter2.click()
-    except (ElementClickInterceptedException, ElementNotInteractableException):
-        driver.execute_script('arguments[0].click();', filter2)
+    for xpath in ['//*[@id="swal2-content"]/div/div[5]/div/label', '//*[@id="swal2-content"]/div/div[6]/div/label']:
+        filter_element = WebDriverWait(driver, 180).until(
+            EC.element_to_be_clickable((By.XPATH, xpath))
+        )
+        driver.execute_script("arguments[0].scrollIntoView(); arguments[0].click();", filter_element)
 
-except TimeoutException:
-    print("Timeout waiting for element to become clickable.")
-except ElementNotInteractableException:
-    print("Element not interactable, attempting alternative interaction.")
-except Exception as e:
-    print(f"Error interacting with page elements: {e}")
-finally:
-    driver.quit()
+    # Wait for the table to update after applying filters
+    time.sleep(2)
 
-# Coloquei um sleep de 2 segundos para evitar caso ele tentar pegar o HTML do modal dos filtros
-time.sleep(2)
-
-# Pega o HTML do site com os filtros já aplicados
-try:
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url)
+    # Get the updated page source
     page_source = driver.page_source
+
 except WebDriverException as e:
-    print(f"Error initializing WebDriver: {e}")
+    print(f"Error during web scraping: {e}")
     exit(1)
 finally:
     driver.quit()
 
+# Parse the table
 soup = BeautifulSoup(page_source, 'html.parser')
 rows = soup.find_all('tr', role='row')
 
@@ -98,10 +59,12 @@ for row in rows:
     row_dict = dict(zip(dict_keys, cell_texts))
     data.append(row_dict)
 
-file_today = datetime.now().strftime('%d-%m-%Y')
-
 df = pd.DataFrame(data)
 df = df.dropna(how='all')
+
+# Save to Excel (assuming you want to keep this part)
+from datetime import datetime
+file_today = datetime.now().strftime('%d-%m-%Y')
 df.to_excel(f'ranking_{file_today}.xlsx', index=False)
 
 driver.quit()
