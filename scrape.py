@@ -7,8 +7,12 @@ from selenium.common.exceptions import ElementClickInterceptedException, Element
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-from webdriver_manager.chrome import ChromeDriverManager
 import os
+from email.message import EmailMessage
+import ssl
+import smtplib
+from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
 
 url = 'https://investidor10.com.br/fiis/rankings/maior-valor-patrimonial/'
 
@@ -64,8 +68,10 @@ df = pd.DataFrame(data)
 df = df.dropna(how='all')
 
 # Save to Excel (assuming you want to keep this part)
-from datetime import datetime
 file_today = datetime.now().strftime('%d-%m-%Y')
+
+df = pd.DataFrame(data)
+df = df.dropna(how='all')
 df.to_excel(f'ranking_{file_today}.xlsx', index=False)
 
 driver.quit()
