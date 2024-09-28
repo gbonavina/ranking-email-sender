@@ -67,11 +67,14 @@ for row in rows:
 df = pd.DataFrame(data)
 df = df.dropna(how='all')
 
-# Save to Excel (assuming you want to keep this part)
+# Save to Excel 
 file_today = datetime.now().strftime('%d-%m-%Y')
 
 df = pd.DataFrame(data)
 df = df.dropna(how='all')
+# Remove duplicates based on 'Ticker' column
+df = df.drop_duplicates(subset=['Ticker'], keep='first')
+
 df.to_excel(f'ranking_{file_today}.xlsx', index=False)
 
 driver.quit()
